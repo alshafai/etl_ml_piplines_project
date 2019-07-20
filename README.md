@@ -3,20 +3,20 @@
 ### Project Overview & Motivation
 The project is a code that can be used to classify messages received in case of emergencies (e.g. flooding, severe weather, etc) into relevant messages and into different categories to be directed to the right agency. This is completed for project 6 of the Udacity Nanodegree for data science.
 
-### Files
-# process_data.py
+# Files
+## process_data.py
 This file contains the code responsible for implementing the ETL pipeline by merging the messages with the different categories, cleaning the data and storing it in a SQL database.
 
-# train_classifier.py
+## train_classifier.py
 This file is for the ML pipeline where we load the data from the SQL database and split it into trainnin and testing data, build, train and utilize maching learning pipeline to predict the categories of any message.
 
-# run.py
+## run.py
 This is the Flask web app file responsible for running the server and utilize the previous work to vizualize and provide a convinent way of predicting the categories for new messages.
 
-# .csv
+## .csv
 These are the originally provided datasets
 
-# DisasterResponse.db
+## DisasterResponse.db
 This is the output from the ETL pipeline stored as a SQLite database
 
 ### Libraries
