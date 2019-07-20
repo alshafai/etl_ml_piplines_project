@@ -1,4 +1,5 @@
 import sys
+import pickle
 import pandas as pd
 import numpy as np
 import sqlalchemy
@@ -11,7 +12,7 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer, Tf
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 import re
 from sklearn.metrics import classification_report
 nltk.download(['punkt', 'wordnet', 'averaged_perceptron_tagger','stopwords'])
@@ -21,9 +22,11 @@ def load_data(database_filepath):
     """
     # load data from database
     engine = create_engine('sqlite:///'+database_filepath)
-    df = pd.read_sql_table('messages2', engine)
+    df = pd.read_sql_table('messages', engine)
     X = df.message
     Y = df.drop(['id','message','original','genre'], axis= 1)
+    
+    return X, Y, df.columns
 
 def tokenize(text):
     """ A function that tokenize the text 
@@ -58,26 +61,23 @@ def build_model():
         'text_pipeline__vect__max_df': (0.5, 0.75, 1.0),
         'text_pipeline__vect__max_features': (None, 5000, 10000),
         'text_pipeline__tfidf__use_idf': (True, False),
-        'clf__n_estimators': [50, 100, 200],
-        'clf__min_samples_split': [2, 3, 4],
+        'clf__estimator__n_estimators': [50, 100, 200],
+        'clf__estimator__min_samples_split': [2, 3, 4],
     }
 
     cv = GridSearchCV(pipeline, param_grid=parameters)
     
-    cv.fit(X_train, Y_train)
-    
-    clf = cv.best_estimator_
-    
-    return clf
+    return cv
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    y_pred = model.predict(X_test)
-    for col in y_pred.columns:
-        print(classification_report(Y_test, y_pred, target_names= category_names))
+    clf = model.best_estimator_
+    y_pred = clf.predict(X_test)
+    print(classification_report(Y_test.iloc[:,1:].values, np.array([x[1:] for x in y_pred]), target_names=category_names))
 
 
 def save_model(model, model_filepath):
-    pass
+    pickle.dump(model, open(model_filepath, 'wb'))
+
 
 
 def main():
