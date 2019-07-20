@@ -1,13 +1,12 @@
 import json
 import plotly
 import pandas as pd
-
+import numpy as np
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
-
 from flask import Flask
 from flask import render_template, request, jsonify
-from plotly.graph_objs import Bar
+from plotly.graph_objs import Bar, Heatmap, Histogram
 from sklearn.externals import joblib
 from sqlalchemy import create_engine
 
@@ -28,6 +27,8 @@ def tokenize(text):
 # load data
 engine = create_engine('sqlite:///../data/DisasterResponse.db')
 df = pd.read_sql_table('messages', engine)
+df['length'] = np.array([len(text) for text in df.message]).reshape(-1, 1)
+df['length_under_600'] = df[df.length<600].length
 
 # load model
 model = joblib.load("../models/classifier.pkl")
@@ -45,6 +46,13 @@ def index():
     
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
+    
+    category_map = df.iloc[:,4:].corr().values
+    category_names = list(df.iloc[:,4:].columns)
+    
+    category_names = df.iloc[:,4:].columns
+    category_boolean = (df.iloc[:,4:] != 0).sum().values
+    
     graphs = [
         {
             'data': [
@@ -63,7 +71,38 @@ def index():
                     'title': "Genre"
                 }
             }
+        }, 
+                {
+            'data': [
+                Histogram(
+                    x=df.length_under_600,
+                )    
+            ],
+
+            'layout': {
+                'title': 'Histogram of Messages Length below 600 character'
+            }
+        },
+        {
+            'data': [
+                Bar(
+                    x=category_names,
+                    y=category_boolean
+                )
+            ],
+
+            'layout': {
+                'title': 'Distribution of Message Categories',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Category",
+                    'tickangle': 35
+                }
+            }
         }
+
     ]
     
     # encode plotly graphs in JSON

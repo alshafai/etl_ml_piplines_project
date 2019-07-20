@@ -70,12 +70,16 @@ def build_model():
     return cv
 
 def evaluate_model(model, X_test, Y_test, category_names):
+    """ A function that gets the best model and predict for the test data
+    """
     clf = model.best_estimator_
     y_pred = clf.predict(X_test)
     print(classification_report(Y_test.iloc[:,1:].values, np.array([x[1:] for x in y_pred]), target_names=category_names))
 
 
 def save_model(model, model_filepath):
+    """ A function that saves the model in a pickle file
+    """
     pickle.dump(model, open(model_filepath, 'wb'))
 
 
