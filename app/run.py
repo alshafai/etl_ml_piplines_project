@@ -80,7 +80,13 @@ def index():
             ],
 
             'layout': {
-                'title': 'Histogram of Messages Length below 600 character'
+                'title': 'Histogram of Messages Length below 600 character',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Length of Message"
+                }
             }
         },
         {
